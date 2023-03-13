@@ -27,9 +27,9 @@ class OrderTakerScreen(CommonScreen):
 class AdvertisementScreen(CommonScreen):
     pass
 
-class AwesomeApp(App):
+class DriveThruApp(App):
     def build(self):
         return AppLayout()
     
 if __name__=='__main__':
-    AwesomeApp().run()
+    DriveThruApp().run()
