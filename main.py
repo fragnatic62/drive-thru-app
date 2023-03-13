@@ -1,27 +1,35 @@
 import os
 
+from kivy.core.window import Window
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 
-
+Window.maximize()
 
 Builder.load_file(os.path.abspath('main.kv'))
 
-class MyLayout(Widget):
+class AppLayout(Widget):
     pass
 
-class MenuScreen(Screen):
+class CommonScreen(Screen):
     pass
 
-class SettingsScreen(Screen):
+class CustomerScreen(CommonScreen):
+    pass
+
+class OrderTakerScreen(CommonScreen):
+    pass
+
+
+class AdvertisementScreen(CommonScreen):
     pass
 
 class AwesomeApp(App):
     def build(self):
-        return MyLayout()
+        return AppLayout()
     
 if __name__=='__main__':
     AwesomeApp().run()

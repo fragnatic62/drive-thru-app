@@ -1,25 +1,27 @@
-<MyLayout>
+<AppLayout>
     BoxLayout:
         orientation: 'vertical'
         size: root.width, root.height
 
         GridLayout:
             cols: 2
-
-            MenuScreen:
-            MenuScreen:
+            CustomerScreen:
+            OrderTakerScreen:
         
         GridLayout:
             cols: 1
+            AdvertisementScreen:
 
-            SettingsScreen:
-
-<MenuScreen>:
+<CommonScreen>:
     BoxLayout:
-        Button:
-            text: 'Goto settings'
+        Video:
+            source: "big_buck_bunny_720p_1mb.mp4"
+            state: "play"
+            options: {'eos': 'loop'}
+            allow_stretch: True
 
-<SettingsScreen>:
-    BoxLayout:
-        Button:
-            text: 'My settings button'
+<CustomerScreen>:
+
+<OrderTakerScreen>
+
+<AdvertisementScreen>:
