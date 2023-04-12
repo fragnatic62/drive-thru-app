@@ -3,14 +3,14 @@
         source: "big_buck_bunny_720p_1mb.mp4"
         state: "play"
         options: {'eos': 'loop'}
-        # allow_stretch: True
+        allow_stretch: True
 
 <CustomerCamera>:
     Video:
         source: "big_buck_bunny_720p_1mb.mp4"
         state: "play"
         options: {'eos': 'loop'}
-        # allow_stretch: True
+        allow_stretch: True
 
 <FullImage>:
     canvas:
@@ -32,15 +32,20 @@
     
         OrderTakerCamera:
             pos_hint: {'x':0, 'y':0.4}
-            size_hint: 0.5, 0.6
+            size_hint: 0.5, 0.7
 
         CustomerCamera:
             pos_hint: {'x':0.5, 'y':0.4}
-            size_hint: 0.5, 0.6
+            size_hint: 0.5, 0.7
         
         AdvertisementSpace:
             pos_hint: {'x':0, 'y':0}
-            size_hint: 1, 0.4
+            size_hint: 1, 0.5
+        
+        Button:
+            text: "Click me"
+            pos_hint: {'x':0, 'y':0}
+            size_hint: 1, 0.1
         
 
 

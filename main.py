@@ -7,8 +7,9 @@ from kivy.properties import ObjectProperty
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
+from kivy.uix.video import Video
 
-# Window.maximize()
+Window.maximize()
 
 Builder.load_file(os.path.abspath('main.kv'))
 
