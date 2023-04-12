@@ -1,13 +1,13 @@
 <OrderTakerCamera>:
     Video:
-        source: "big_buck_bunny_720p_1mb.mp4"
+        source: "assets/big_buck_bunny_720p_1mb.mp4"
         state: "play"
         options: {'eos': 'loop'}
         allow_stretch: True
 
 <CustomerCamera>:
     Video:
-        source: "big_buck_bunny_720p_1mb.mp4"
+        source: "assets/big_buck_bunny_720p_1mb.mp4"
         state: "play"
         options: {'eos': 'loop'}
         allow_stretch: True
@@ -23,7 +23,7 @@
 
 <AdvertisementSpace>:
     FullImage:
-        source: 'test-image.png'
+        source: 'assets/test-image.png'
         size: self.texture_size
 
 <AppLayout>
@@ -31,21 +31,24 @@
         size: root.width, root.height
     
         OrderTakerCamera:
+            padding: 4
             pos_hint: {'x':0, 'y':0.4}
-            size_hint: 0.5, 0.7
+            size_hint: 0.5, 0.68
 
         CustomerCamera:
+            padding: 4
             pos_hint: {'x':0.5, 'y':0.4}
-            size_hint: 0.5, 0.7
+            size_hint: 0.5, 0.68
         
         AdvertisementSpace:
+            padding:5
             pos_hint: {'x':0, 'y':0}
-            size_hint: 1, 0.5
+            size_hint: 1, 0.47
         
         Button:
             text: "Click me"
             pos_hint: {'x':0, 'y':0}
-            size_hint: 1, 0.1
+            size_hint: 1, 0.05
         
 
 
