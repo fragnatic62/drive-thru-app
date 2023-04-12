@@ -5,26 +5,26 @@ from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.lang import Builder
-from kivy.uix.screenmanager import Screen
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
 
-Window.maximize()
+# Window.maximize()
 
 Builder.load_file(os.path.abspath('main.kv'))
 
+class OrderTakerCamera(BoxLayout):
+    pass
+
+class CustomerCamera(BoxLayout):
+    pass
+
+
+class AdvertisementSpace(BoxLayout):
+    pass
+
+class FullImage(Image):
+    pass
 class AppLayout(Widget):
-    pass
-
-class CommonScreen(Screen):
-    pass
-
-class CustomerScreen(CommonScreen):
-    pass
-
-class OrderTakerScreen(CommonScreen):
-    pass
-
-
-class AdvertisementScreen(CommonScreen):
     pass
 
 class DriveThruApp(App):
