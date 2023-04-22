@@ -1,4 +1,6 @@
 import os
+import socket
+import time
 
 # Kivy imports
 from kivy.core.window import Window
@@ -20,6 +22,9 @@ Builder.load_file(os.path.abspath('main.kv'))
 
 Window.maximize()
 
+
+
+"""rtsp address of camera to be stream"""
 channel_one = 'rtsp://admin:*adminpassword@192.168.1.109:554/cam/realmonitor?channel=1&subtype=0'
 channel_two = 'rtsp://admin:*adminpassword@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0'
 
@@ -142,20 +147,38 @@ class ScreenManagerApp(App):
         sm = ScreenManager()
 
         # Add the screens to the screen manager
-        screen1 = ScreenOne(name='screen1')
-        sm.add_widget(screen1)
-
         screen2 = ScreenTwo(name='screen2')
         sm.add_widget(screen2)
 
-        # Schedule the screen switch every 3 seconds
-        def switch_screen(dt):
+        screen1 = ScreenOne(name='screen1')
+        sm.add_widget(screen1)
+
+        """address and port of the oranges pi which host the gpio"""
+        HOST = '192.168.1.107'  # The server's hostname or IP address
+        PORT = 8000        # The port used by the server
+        socket_instance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socket_instance.connect((HOST, PORT))
+        
+        sm.switch_to(screen2)
+
+        def load_screen_one():
+            if sm.current_screen == screen2:
+                sm.switch_to(screen1)
+        
+        def load_screen_two(dt):
             if sm.current_screen == screen1:
                 sm.switch_to(screen2)
-            else:
-                sm.switch_to(screen1)
 
-        Clock.schedule_interval(switch_screen, 30)
+        # Schedule the screen switch every second
+        def switch_screen(dt):
+                data = socket_instance.recv(1024)
+                signal_response = data.decode('utf-8')
+                print(signal_response)
+                if signal_response.strip()=='0':
+                    load_screen_one()
+                    Clock.schedule_once(load_screen_two,10)
+                    
+        Clock.schedule_interval(switch_screen, 1)
 
         return sm
 
