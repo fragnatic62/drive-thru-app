@@ -2,19 +2,19 @@ import socket
 import time
 
 # # Orange Pi Pins imports
-# from pyA20.gpio import gpio
-# from pyA20.gpio import port
+from pyA20.gpio import gpio
+from pyA20.gpio import port
 
 # #initialize the gpio module
-# gpio.init()
+gpio.init()
 
 # #initialize GPIO pin
-# gpio.setcfg(port.PA12,gpio.INPUT)
-# gpio.pullup(port.PA12,gpio.PULLUP)
-# gpio.pullup(port.PA12,gpio.PULLDOWN)
+gpio.setcfg(port.PA12,gpio.INPUT)
+gpio.pullup(port.PA12,gpio.PULLUP)
+gpio.pullup(port.PA12,gpio.PULLDOWN)
 
 def read_gpio():
-    return time.time()
+    return gpio.input(port.PA12)
 
 
 HOST = '0.0.0.0'
