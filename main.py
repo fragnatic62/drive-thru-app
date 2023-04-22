@@ -3,67 +3,161 @@ import os
 # Kivy imports
 from kivy.core.window import Window
 from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.properties import ObjectProperty, StringProperty
 from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
-from kivy.uix.video import Video
 from kivy.clock import Clock
+import cv2
+from kivy.graphics.texture import Texture
+from kivy.uix.carousel import Carousel
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.image import Image
+from kivy.graphics import Color, Rectangle
+from kivy.uix.screenmanager import Screen, ScreenManager
 
-# Orange Pi Pins imports
-from pyA20.gpio import gpio
-from pyA20.gpio import port
-from time import sleep
-
-#initialize the gpio module
-gpio.init()
-
-#initialize GPIO pin
-gpio.setcfg(port.PA12,gpio.INPUT)
-gpio.pullup(port.PA12,gpio.PULLUP)
-gpio.pullup(port.PA12,gpio.PULLDOWN)
-
-Window.maximize()
 
 Builder.load_file(os.path.abspath('main.kv'))
 
-class FullImage(Image):
+Window.maximize()
+
+channel_one = 'rtsp://admin:*adminpassword@192.168.1.109:554/cam/realmonitor?channel=1&subtype=0'
+channel_two = 'rtsp://admin:*adminpassword@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0'
+
+class FullScreenImage(Image):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas:
+            Color(1, 1, 1)
+            self.rect = Rectangle(texture=self.texture, size=(self.width + 20, self.height + 20), pos=(self.x - 10, self.y - 10))
+
+    def on_size(self, *args):
+        self.rect.size = self.width + 20, self.height + 20
+        self.rect.pos = self.x - 10, self.y - 10
+
+class Camera(Image):
+    def __init__(self, capture, fps, **kwargs):
+        super(Camera, self).__init__(**kwargs)
+        self.capture = capture
+        self.fps = fps
+        Clock.schedule_interval(self.update, 1.0 / self.fps)
+
+    def update(self, dt):
+        ret, frame = self.capture.read()
+        if ret:
+            # Flip the frame vertically
+            frame = cv2.flip(frame, 0)
+            # Convert the frame from BGR to RGB
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # Create a texture from the frame data
+            texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='rgb')
+            texture.blit_buffer(frame.tobytes(), colorfmt='rgb', bufferfmt='ubyte')
+            # Update the Image widget with the new texture
+            self.texture = texture
+
+class OrderTakerCamera(BoxLayout):
+     def __init__(self,**kwargs):
+        super(OrderTakerCamera, self).__init__(**kwargs)
+        # Create a capture object from the RTSP URLs
+        capture = cv2.VideoCapture(channel_one)
+
+        # Set the capture resolutions
+        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+        # Create Camera widgets using the capture objects and a frame rate of 30 FPS
+        self.camera = Camera(capture, fps=100)
+
+        # Create a horizontal BoxLayout to hold the cameras
+        cameras_layout = BoxLayout()
+        cameras_layout.add_widget(self.camera)
+
+        self.add_widget(cameras_layout)
+
+class CustomerCamera(BoxLayout):
+     def __init__(self,**kwargs):
+        super(CustomerCamera, self).__init__(**kwargs)
+        # Create a capture object from the RTSP URLs
+        capture = cv2.VideoCapture(channel_two)
+
+        # Set the capture resolutions
+        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+        # Create Camera widgets using the capture objects and a frame rate of 30 FPS
+        self.camera = Camera(capture, fps=100)
+
+        # Create a horizontal BoxLayout to hold the cameras
+        cameras_layout = BoxLayout()
+        cameras_layout.add_widget(self.camera)
+
+        self.add_widget(cameras_layout)
+
+
+class AdsCarousel(Carousel):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.load_images()
+        self.current_page_index = 0
+        Clock.schedule_interval(self.load_next_page, 5)
+        self.scroll_wheel_distance = 10000
+
+    def load_images(self):
+        for i in range(1, 21, 3):
+            page = GridLayout(cols=3)
+            for j in range(i, i+3):
+                img = FullScreenImage(source=f"assets/image{j}.jpeg")
+                page.add_widget(img)
+            self.add_widget(page)
+        self.direction = 'right'
+
+    def load_next_page(self, dt):
+        slides = self.slides
+        current_slide_index = slides.index(self.current_slide)
+        next_slide_index = (current_slide_index + 1) % len(slides)
+        if next_slide_index == 0:
+            self.direction = 'right'
+        else:
+            self.direction = 'left'
+        self.load_slide(slides[next_slide_index])
+
+
+# This screen contains the camera display
+class ScreenOne(Screen):
     pass
-    
-class AppLayout(Widget):
-    img_src = StringProperty('assets/test-image.png')
-    video_src = StringProperty('assets/big_buck_bunny_720p_1mb.mp4')
 
-    def __init__(self,**kwargs):
-        super(AppLayout,self).__init__(**kwargs)
-        Clock.schedule_interval(self.event_handler,0.1)
-    
-    #event callback to change screen view to camera
-    def event_handler(self,dt):
-        value = gpio.input(port.PA12)
-        if(value==0):
-            self.set_screen_to_video_stream()
-            Clock.schedule_once(self.reset_event_to_default,5)
-    
-    #event callback to reset screen view
-    def reset_event_to_default(self,dt):
-        self.set_screen_to_default()
+# This screen contains the menu when there's no active customer available
+class ScreenTwo(Screen):
+    def __init__(self, **kwargs):
+        super(ScreenTwo, self).__init__(**kwargs)
+        grid = GridLayout(cols=4, spacing=10, padding=10)
+        for i in range(20):
+            image = FullScreenImage(source=f"assets/image{i+1}.jpeg")
+            grid.add_widget(image)
+        self.add_widget(grid)
 
-    
-    def set_screen_to_default(self):
-        self.img_src = 'assets/test-image.png'
-        self.video_src = 'assets/big_buck_bunny_720p_1mb.mp4'
-    
-    def set_screen_to_video_stream(self):
-        self.img_src = 'assets/test.png'
-        self.video_src = 'assets/Free_Test_video.mp4'
 
-    
-
-class DriveThruApp(App):
+class ScreenManagerApp(App):
     def build(self):
-        return AppLayout()
-    
-if __name__=='__main__':
-    DriveThruApp().run()
+        # Create the screen manager
+        sm = ScreenManager()
+
+        # Add the screens to the screen manager
+        screen1 = ScreenOne(name='screen1')
+        sm.add_widget(screen1)
+
+        screen2 = ScreenTwo(name='screen2')
+        sm.add_widget(screen2)
+
+        # Schedule the screen switch every 3 seconds
+        def switch_screen(dt):
+            if sm.current_screen == screen1:
+                sm.switch_to(screen2)
+            else:
+                sm.switch_to(screen1)
+
+        Clock.schedule_interval(switch_screen, 30)
+
+        return sm
+
+if __name__ == '__main__':
+    ScreenManagerApp().run()
