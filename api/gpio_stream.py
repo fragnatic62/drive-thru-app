@@ -26,3 +26,7 @@ def stream():
             yield str(read_gpio())
 
     return Response(generate(), mimetype='text/plain')
+
+@app.route('/')
+def index():
+    return '<h1>App deployed</h1>'
