@@ -25,8 +25,9 @@ Window.maximize()
 
 
 """rtsp address of camera to be stream"""
-channel_one = 'rtsp://admin:*adminpassword@192.168.1.109:554/cam/realmonitor?channel=1&subtype=0'
+# channel_one = 'rtsp://admin:*adminpassword@192.168.1.109:554/cam/realmonitor?channel=1&subtype=0'
 channel_two = 'rtsp://admin:*adminpassword@192.168.1.108:554/cam/realmonitor?channel=1&subtype=0'
+
 
 class FullScreenImage(Image):
     def __init__(self, **kwargs):
@@ -59,25 +60,6 @@ class Camera(Image):
             # Update the Image widget with the new texture
             self.texture = texture
 
-class OrderTakerCamera(BoxLayout):
-     def __init__(self,**kwargs):
-        super(OrderTakerCamera, self).__init__(**kwargs)
-        # Create a capture object from the RTSP URLs
-        capture = cv2.VideoCapture(channel_one)
-
-        # Set the capture resolutions
-        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
-        # Create Camera widgets using the capture objects and a frame rate of 30 FPS
-        self.camera = Camera(capture, fps=100)
-
-        # Create a horizontal BoxLayout to hold the cameras
-        cameras_layout = BoxLayout()
-        cameras_layout.add_widget(self.camera)
-
-        self.add_widget(cameras_layout)
-
 class CustomerCamera(BoxLayout):
      def __init__(self,**kwargs):
         super(CustomerCamera, self).__init__(**kwargs)
@@ -89,7 +71,7 @@ class CustomerCamera(BoxLayout):
         capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
         # Create Camera widgets using the capture objects and a frame rate of 30 FPS
-        self.camera = Camera(capture, fps=100)
+        self.camera = Camera(capture, fps=1000)
 
         # Create a horizontal BoxLayout to hold the cameras
         cameras_layout = BoxLayout()
@@ -142,6 +124,8 @@ class ScreenTwo(Screen):
 
 
 class ScreenManagerApp(App):
+    current_signal_response = None
+    previous_signal_response = '1'
     def build(self):
         # Create the screen manager
         sm = ScreenManager()
@@ -161,6 +145,10 @@ class ScreenManagerApp(App):
         
         sm.switch_to(screen2)
 
+        def reset_timer():
+            Clock.unschedule(load_screen_two)  # Remove any existing scheduled calls
+            Clock.schedule_once(load_screen_two, 10)
+
         def load_screen_one():
             if sm.current_screen == screen2:
                 sm.switch_to(screen1)
@@ -172,12 +160,15 @@ class ScreenManagerApp(App):
         # Schedule the screen switch every second
         def switch_screen(dt):
                 data = socket_instance.recv(1024)
-                signal_response = data.decode('utf-8')
-                print(signal_response)
-                if signal_response.strip()=='0':
+                self.current_signal_response = data.decode('utf-8').strip()
+
+                if self.current_signal_response=='0' and self.previous_signal_response == '1':
                     load_screen_one()
                     Clock.schedule_once(load_screen_two,10)
-                    
+                if self.current_signal_response=='0' and self.previous_signal_response == '0':
+                    reset_timer()
+                self.previous_signal_response = self.current_signal_response
+
         Clock.schedule_interval(switch_screen, 1)
 
         return sm
