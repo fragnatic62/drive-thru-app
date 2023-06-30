@@ -51,11 +51,3 @@ The code consists of the following components:
 ## Screen Switching
 
 The application uses a socket connection to switch between screens based on external signals. It connects to a server (specified by the `HOST` and `PORT` variables) and receives signals indicating when to switch screens. When a signal of value `0` is received, it switches to `ScreenOne` (camera display). After a certain interval (10 seconds), it switches back to `ScreenTwo` (menu).
-
-## Authors
-
-This code was written by [Your Name] and is based on a template provided by [Author Name].
-
-## License
-
-This project is licensed under the [License Name] license.
